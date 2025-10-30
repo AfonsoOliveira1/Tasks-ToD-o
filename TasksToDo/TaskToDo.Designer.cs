@@ -33,20 +33,20 @@
             this.lblFuncionario = new System.Windows.Forms.Label();
             this.lblEquipa = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.lblNome = new System.Windows.Forms.Label();
-            this.txtTarefa = new System.Windows.Forms.TextBox();
-            this.cbCoordenador = new System.Windows.Forms.CheckBox();
-            this.cbResponsavel = new System.Windows.Forms.CheckBox();
-            this.maskedTextBox1 = new System.Windows.Forms.MaskedTextBox();
-            this.maskedTextBox2 = new System.Windows.Forms.MaskedTextBox();
-            this.lblDataInicio = new System.Windows.Forms.Label();
-            this.lblDataFim = new System.Windows.Forms.Label();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.lblDescricao = new System.Windows.Forms.Label();
-            this.tvMain = new System.Windows.Forms.TreeView();
-            this.panel2 = new System.Windows.Forms.Panel();
-            this.btnAdicionar = new System.Windows.Forms.Button();
             this.btnGuardar = new System.Windows.Forms.Button();
+            this.btnAdicionar = new System.Windows.Forms.Button();
+            this.panel2 = new System.Windows.Forms.Panel();
+            this.tvMain = new System.Windows.Forms.TreeView();
+            this.lblDescricao = new System.Windows.Forms.Label();
+            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.lblDataFim = new System.Windows.Forms.Label();
+            this.lblDataInicio = new System.Windows.Forms.Label();
+            this.maskedTextBox2 = new System.Windows.Forms.MaskedTextBox();
+            this.maskedTextBox1 = new System.Windows.Forms.MaskedTextBox();
+            this.cbResponsavel = new System.Windows.Forms.CheckBox();
+            this.cbCoordenador = new System.Windows.Forms.CheckBox();
+            this.txtTarefa = new System.Windows.Forms.TextBox();
+            this.lblNome = new System.Windows.Forms.Label();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.SuspendLayout();
@@ -88,6 +88,7 @@
             // 
             // panel1
             // 
+            this.panel1.BackColor = System.Drawing.SystemColors.Control;
             this.panel1.Controls.Add(this.btnGuardar);
             this.panel1.Controls.Add(this.btnAdicionar);
             this.panel1.Controls.Add(this.panel2);
@@ -105,36 +106,96 @@
             this.panel1.Controls.Add(this.cbbEquipa);
             this.panel1.Controls.Add(this.lblFuncionario);
             this.panel1.Controls.Add(this.cbbFuncionario);
-            this.panel1.Location = new System.Drawing.Point(42, 34);
+            this.panel1.Location = new System.Drawing.Point(37, 34);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(688, 380);
+            this.panel1.Size = new System.Drawing.Size(687, 380);
             this.panel1.TabIndex = 4;
             // 
-            // lblNome
+            // btnGuardar
             // 
-            this.lblNome.AutoSize = true;
-            this.lblNome.Location = new System.Drawing.Point(241, 20);
-            this.lblNome.Name = "lblNome";
-            this.lblNome.Size = new System.Drawing.Size(106, 16);
-            this.lblNome.TabIndex = 4;
-            this.lblNome.Text = "Nome da Tarefa";
+            this.btnGuardar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
+            this.btnGuardar.Location = new System.Drawing.Point(471, 333);
+            this.btnGuardar.Name = "btnGuardar";
+            this.btnGuardar.Size = new System.Drawing.Size(181, 33);
+            this.btnGuardar.TabIndex = 15;
+            this.btnGuardar.Text = "Guardar";
+            this.btnGuardar.UseVisualStyleBackColor = false;
             // 
-            // txtTarefa
+            // btnAdicionar
             // 
-            this.txtTarefa.Location = new System.Drawing.Point(244, 39);
-            this.txtTarefa.Name = "txtTarefa";
-            this.txtTarefa.Size = new System.Drawing.Size(254, 22);
-            this.txtTarefa.TabIndex = 5;
+            this.btnAdicionar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
+            this.btnAdicionar.Location = new System.Drawing.Point(243, 333);
+            this.btnAdicionar.Name = "btnAdicionar";
+            this.btnAdicionar.Size = new System.Drawing.Size(181, 33);
+            this.btnAdicionar.TabIndex = 14;
+            this.btnAdicionar.Text = "Adicionar";
+            this.btnAdicionar.UseVisualStyleBackColor = false;
             // 
-            // cbCoordenador
+            // panel2
             // 
-            this.cbCoordenador.AutoSize = true;
-            this.cbCoordenador.Location = new System.Drawing.Point(543, 41);
-            this.cbCoordenador.Name = "cbCoordenador";
-            this.cbCoordenador.Size = new System.Drawing.Size(109, 20);
-            this.cbCoordenador.TabIndex = 6;
-            this.cbCoordenador.Text = "Coordenador";
-            this.cbCoordenador.UseVisualStyleBackColor = true;
+            this.panel2.Controls.Add(this.tvMain);
+            this.panel2.Dock = System.Windows.Forms.DockStyle.Left;
+            this.panel2.Location = new System.Drawing.Point(0, 0);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(235, 380);
+            this.panel2.TabIndex = 5;
+            // 
+            // tvMain
+            // 
+            this.tvMain.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tvMain.Location = new System.Drawing.Point(0, 0);
+            this.tvMain.Name = "tvMain";
+            this.tvMain.Size = new System.Drawing.Size(235, 380);
+            this.tvMain.TabIndex = 14;
+            // 
+            // lblDescricao
+            // 
+            this.lblDescricao.AutoSize = true;
+            this.lblDescricao.Location = new System.Drawing.Point(241, 197);
+            this.lblDescricao.Name = "lblDescricao";
+            this.lblDescricao.Size = new System.Drawing.Size(69, 16);
+            this.lblDescricao.TabIndex = 13;
+            this.lblDescricao.Text = "Descrição";
+            // 
+            // textBox1
+            // 
+            this.textBox1.Location = new System.Drawing.Point(244, 216);
+            this.textBox1.Multiline = true;
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(408, 111);
+            this.textBox1.TabIndex = 12;
+            // 
+            // lblDataFim
+            // 
+            this.lblDataFim.AutoSize = true;
+            this.lblDataFim.Location = new System.Drawing.Point(346, 76);
+            this.lblDataFim.Name = "lblDataFim";
+            this.lblDataFim.Size = new System.Drawing.Size(80, 16);
+            this.lblDataFim.TabIndex = 11;
+            this.lblDataFim.Text = "Data de Fim";
+            // 
+            // lblDataInicio
+            // 
+            this.lblDataInicio.AutoSize = true;
+            this.lblDataInicio.Location = new System.Drawing.Point(241, 76);
+            this.lblDataInicio.Name = "lblDataInicio";
+            this.lblDataInicio.Size = new System.Drawing.Size(89, 16);
+            this.lblDataInicio.TabIndex = 10;
+            this.lblDataInicio.Text = "Data de Início";
+            // 
+            // maskedTextBox2
+            // 
+            this.maskedTextBox2.Location = new System.Drawing.Point(244, 95);
+            this.maskedTextBox2.Name = "maskedTextBox2";
+            this.maskedTextBox2.Size = new System.Drawing.Size(82, 22);
+            this.maskedTextBox2.TabIndex = 9;
+            // 
+            // maskedTextBox1
+            // 
+            this.maskedTextBox1.Location = new System.Drawing.Point(349, 95);
+            this.maskedTextBox1.Name = "maskedTextBox1";
+            this.maskedTextBox1.Size = new System.Drawing.Size(82, 22);
+            this.maskedTextBox1.TabIndex = 8;
             // 
             // cbResponsavel
             // 
@@ -146,95 +207,38 @@
             this.cbResponsavel.Text = "Responsável";
             this.cbResponsavel.UseVisualStyleBackColor = true;
             // 
-            // maskedTextBox1
+            // cbCoordenador
             // 
-            this.maskedTextBox1.Location = new System.Drawing.Point(349, 95);
-            this.maskedTextBox1.Name = "maskedTextBox1";
-            this.maskedTextBox1.Size = new System.Drawing.Size(82, 22);
-            this.maskedTextBox1.TabIndex = 8;
+            this.cbCoordenador.AutoSize = true;
+            this.cbCoordenador.Location = new System.Drawing.Point(543, 41);
+            this.cbCoordenador.Name = "cbCoordenador";
+            this.cbCoordenador.Size = new System.Drawing.Size(109, 20);
+            this.cbCoordenador.TabIndex = 6;
+            this.cbCoordenador.Text = "Coordenador";
+            this.cbCoordenador.UseVisualStyleBackColor = true;
             // 
-            // maskedTextBox2
+            // txtTarefa
             // 
-            this.maskedTextBox2.Location = new System.Drawing.Point(244, 95);
-            this.maskedTextBox2.Name = "maskedTextBox2";
-            this.maskedTextBox2.Size = new System.Drawing.Size(82, 22);
-            this.maskedTextBox2.TabIndex = 9;
+            this.txtTarefa.Location = new System.Drawing.Point(244, 39);
+            this.txtTarefa.Name = "txtTarefa";
+            this.txtTarefa.Size = new System.Drawing.Size(254, 22);
+            this.txtTarefa.TabIndex = 5;
             // 
-            // lblDataInicio
+            // lblNome
             // 
-            this.lblDataInicio.AutoSize = true;
-            this.lblDataInicio.Location = new System.Drawing.Point(241, 76);
-            this.lblDataInicio.Name = "lblDataInicio";
-            this.lblDataInicio.Size = new System.Drawing.Size(89, 16);
-            this.lblDataInicio.TabIndex = 10;
-            this.lblDataInicio.Text = "Data de Início";
-            // 
-            // lblDataFim
-            // 
-            this.lblDataFim.AutoSize = true;
-            this.lblDataFim.Location = new System.Drawing.Point(346, 76);
-            this.lblDataFim.Name = "lblDataFim";
-            this.lblDataFim.Size = new System.Drawing.Size(80, 16);
-            this.lblDataFim.TabIndex = 11;
-            this.lblDataFim.Text = "Data de Fim";
-            // 
-            // textBox1
-            // 
-            this.textBox1.Location = new System.Drawing.Point(244, 216);
-            this.textBox1.Multiline = true;
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(408, 111);
-            this.textBox1.TabIndex = 12;
-            // 
-            // lblDescricao
-            // 
-            this.lblDescricao.AutoSize = true;
-            this.lblDescricao.Location = new System.Drawing.Point(241, 197);
-            this.lblDescricao.Name = "lblDescricao";
-            this.lblDescricao.Size = new System.Drawing.Size(69, 16);
-            this.lblDescricao.TabIndex = 13;
-            this.lblDescricao.Text = "Descrição";
-            // 
-            // tvMain
-            // 
-            this.tvMain.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tvMain.Location = new System.Drawing.Point(0, 0);
-            this.tvMain.Name = "tvMain";
-            this.tvMain.Size = new System.Drawing.Size(217, 380);
-            this.tvMain.TabIndex = 14;
-            // 
-            // panel2
-            // 
-            this.panel2.Controls.Add(this.tvMain);
-            this.panel2.Dock = System.Windows.Forms.DockStyle.Left;
-            this.panel2.Location = new System.Drawing.Point(0, 0);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(217, 380);
-            this.panel2.TabIndex = 5;
-            // 
-            // btnAdicionar
-            // 
-            this.btnAdicionar.Location = new System.Drawing.Point(243, 333);
-            this.btnAdicionar.Name = "btnAdicionar";
-            this.btnAdicionar.Size = new System.Drawing.Size(181, 33);
-            this.btnAdicionar.TabIndex = 14;
-            this.btnAdicionar.Text = "Adicionar";
-            this.btnAdicionar.UseVisualStyleBackColor = true;
-            // 
-            // btnGuardar
-            // 
-            this.btnGuardar.Location = new System.Drawing.Point(471, 333);
-            this.btnGuardar.Name = "btnGuardar";
-            this.btnGuardar.Size = new System.Drawing.Size(181, 33);
-            this.btnGuardar.TabIndex = 15;
-            this.btnGuardar.Text = "Guardar";
-            this.btnGuardar.UseVisualStyleBackColor = true;
+            this.lblNome.AutoSize = true;
+            this.lblNome.Location = new System.Drawing.Point(241, 20);
+            this.lblNome.Name = "lblNome";
+            this.lblNome.Size = new System.Drawing.Size(106, 16);
+            this.lblNome.TabIndex = 4;
+            this.lblNome.Text = "Nome da Tarefa";
             // 
             // TasksToDo
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
+            this.ClientSize = new System.Drawing.Size(776, 450);
             this.Controls.Add(this.panel1);
             this.MaximizeBox = false;
             this.Name = "TasksToDo";
