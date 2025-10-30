@@ -10,9 +10,9 @@ using System.Windows.Forms;
 
 namespace TasksToDo
 {
-    public partial class Form1 : Form
+    public partial class TasksToDo : Form
     {
-        public Form1()
+        public TasksToDo()
         {
             InitializeComponent();
         }
