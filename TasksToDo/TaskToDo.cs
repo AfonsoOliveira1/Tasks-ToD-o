@@ -26,8 +26,8 @@ namespace TasksToDo
 
         public void EquipasComboBox()
         {
-            string caminhoApp = AppDomain.CurrentDomain.BaseDirectory;
-            string caminho = Path.GetPathRoot(caminhoApp) + "\\Users\\" + Environment.UserName + "\\Documents\\Dados\\equipas.txt";
+            string pastaDocumentos = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string caminho = Path.Combine(pastaDocumentos, "Dados", "equipas.txt");
             try
             {
                 cbbEquipa.Items.Clear();
@@ -48,8 +48,8 @@ namespace TasksToDo
         }
         public void FuncionariosComboBox()
         {
-            string caminhoApp = AppDomain.CurrentDomain.BaseDirectory;
-            string caminho = Path.GetPathRoot(caminhoApp) + "\\Users\\" + Environment.UserName + "\\Documents\\Dados\\funcionarios.txt";
+            string pastaDocumentos = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string caminho = Path.Combine(pastaDocumentos, "Dados", "funcionarios.txt");
             try
             {
                 cbbFuncionario.Items.Clear();
@@ -103,6 +103,37 @@ namespace TasksToDo
                 errorProvider1.SetError(mtxtDataInicio, "Data fim nao pode ser menor que a Data de incio!");
                 valido = false;
             }
+            if (equipas[cbbEquipa.SelectedIndex].funcionarios.Count >= 5)//cada equipa so pode ter 5 funcionarios no maximo
+            {
+                valido = false;
+                errorProvider1.SetError(cbbFuncionario, "Cada equipa só pode ter 5 funcionarios no maximo");
+            }
+
+            var funcionario = equipas
+                .SelectMany(e => e.funcionarios)
+                .FirstOrDefault(x => x.nome == cbbFuncionario.Text);
+
+            if (funcionario == null)
+            {
+                valido = true;
+            }
+            else if (funcionario.tarefas.Count >= 3)//cada funcionario so pode ter 3 tarefas
+            {
+                valido = false;
+                errorProvider1.SetError(txtTarefa, "O funcionario so pode ter 3 tarefas");
+            }
+
+            foreach(TreeNode equipa in tvMain.Nodes)
+            {
+                foreach(TreeNode func in equipa.Nodes)
+                {
+                    if(func.SelectedImageIndex == 3 && cbCoordenador.Checked)//cada equipa so pode ter 1 coordenador
+                    {
+                        valido = false;
+                        break;
+                    }
+                }
+            }
 
             return valido;
         }
@@ -111,9 +142,9 @@ namespace TasksToDo
         {
             errorProvider1.Clear();
 
-            string nomeEquipa = cbbEquipa.Text.Trim();
-            string nomeFuncionario = cbbFuncionario.Text.Trim();
-            string nomeTarefa = txtTarefa.Text.Trim();
+            string nomeEquipa = cbbEquipa.Text;
+            string nomeFuncionario = cbbFuncionario.Text;
+            string nomeTarefa = txtTarefa.Text;
 
             TreeNode equipaNode = null;
             foreach (TreeNode node in tvMain.Nodes)
@@ -127,7 +158,6 @@ namespace TasksToDo
 
             if (equipaNode == null)
             {
-                equipas.Add(new Equipas(cbbEquipa.Text));
                 equipaNode = new TreeNode();
                 equipaNode.Text = cbbEquipa.Text;
                 equipaNode.ImageIndex = equipaNode.SelectedImageIndex = 0;
@@ -137,7 +167,7 @@ namespace TasksToDo
             TreeNode func = null;
             foreach (TreeNode node in equipaNode.Nodes)
             {
-                if (node.Text == nomeFuncionario)
+                if (node.Tag.ToString() == nomeFuncionario)
                 {
                     func = node;
                     break;
@@ -148,6 +178,7 @@ namespace TasksToDo
             {
                 var funcio = equipas[cbbEquipa.SelectedIndex].funcionarios;
                 func = new TreeNode(nomeFuncionario);
+                func.Tag = cbbFuncionario.Text;
                 if (cbCoordenador.Checked && cbResponsavel.Checked)
                 {
                     funcio.Add(new Funcionarios(cbbFuncionario.Text, true));
@@ -158,7 +189,6 @@ namespace TasksToDo
                 {
                     funcio.Add(new Funcionarios(cbbFuncionario.Text, true));
                     func.ImageIndex = func.SelectedImageIndex = 3;
-                    func.Text = cbbFuncionario.Text;
                 }
                 else if (cbResponsavel.Checked)
                 {
@@ -169,7 +199,6 @@ namespace TasksToDo
                 else
                 {
                     funcio.Add(new Funcionarios(cbbFuncionario.Text, false));
-                    func.Text = cbbFuncionario.Text;
                     func.ImageIndex = func.SelectedImageIndex = 1;
                 }
                 equipaNode.Nodes.Add(func);
@@ -187,7 +216,7 @@ namespace TasksToDo
 
             if(task == null)
             {
-                var tarefa = equipas[cbbEquipa.SelectedIndex].funcionarios[cbbFuncionario.SelectedIndex].tarefas;
+                var tarefa = equipas.SelectMany(e => e.funcionarios).FirstOrDefault(x => x.nome == nomeFuncionario).tarefas;
                 string r;
                 if (cbResponsavel.Checked) r = cbbFuncionario.Text; else r = "";
                 tarefa.Add(new Tarefa(txtTarefa.Text, txtDescricao.Text, r, Convert.ToDateTime(mtxtDataInicio.Text), Convert.ToDateTime(mtxtDataFim.Text)));
@@ -206,7 +235,30 @@ namespace TasksToDo
         }
         private void btnGuardar_Click(object sender, EventArgs e)
         {
-
+            string pastaDocumentos = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string caminho = Path.Combine(pastaDocumentos, "Dados", "treeviewdados.txt");
+            try
+            {
+                using (StreamWriter writer = new StreamWriter(caminho))
+                {
+                    for (int i = 0; i < equipas.Count; i++)
+                    {
+                        Console.WriteLine(equipas[i].nome);
+                        for(int j = 0; j < equipas[i].funcionarios.Count; j++)
+                        {
+                            Console.WriteLine("|" + equipas[i].funcionarios[j].nome);
+                            for(int l = 0; l < equipas[i].funcionarios[j].tarefas.Count; l++)
+                            {
+                                Console.WriteLine("|" + equipas[i].funcionarios[j].tarefas[l].nome);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ocorreu um erro com" + ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void btnAdicionar_Click(object sender, EventArgs e)
