@@ -107,9 +107,8 @@ namespace TasksToDo
             return valido;
         }
 
-        private void PopularTree()
+        private void AdicionarNaTreeView()
         {
-            tvMain.Nodes.Clear();
             errorProvider1.Clear();
 
             string nomeEquipa = cbbEquipa.Text.Trim();
@@ -128,6 +127,7 @@ namespace TasksToDo
 
             if (equipaNode == null)
             {
+                equipas.Add(new Equipas(cbbEquipa.Text));
                 equipaNode = new TreeNode();
                 equipaNode.Text = cbbEquipa.Text;
                 equipaNode.ImageIndex = equipaNode.SelectedImageIndex = 0;
@@ -146,24 +146,29 @@ namespace TasksToDo
 
             if (func == null)
             {
+                var funcio = equipas[cbbEquipa.SelectedIndex].funcionarios;
                 func = new TreeNode(nomeFuncionario);
                 if (cbCoordenador.Checked && cbResponsavel.Checked)
                 {
+                    funcio.Add(new Funcionarios(cbbFuncionario.Text, true));
                     func.Text = "R: " + cbbFuncionario.Text;
                     func.ImageIndex = func.SelectedImageIndex = 3;
                 }
                 else if (cbCoordenador.Checked)
                 {
+                    funcio.Add(new Funcionarios(cbbFuncionario.Text, true));
                     func.ImageIndex = func.SelectedImageIndex = 3;
                     func.Text = cbbFuncionario.Text;
                 }
                 else if (cbResponsavel.Checked)
                 {
+                    funcio.Add(new Funcionarios(cbbFuncionario.Text, false));
                     func.Text = "R: " + cbbFuncionario.Text;
                     func.ImageIndex = func.SelectedImageIndex = 1;
                 }
                 else
                 {
+                    funcio.Add(new Funcionarios(cbbFuncionario.Text, false));
                     func.Text = cbbFuncionario.Text;
                     func.ImageIndex = func.SelectedImageIndex = 1;
                 }
@@ -182,6 +187,10 @@ namespace TasksToDo
 
             if(task == null)
             {
+                var tarefa = equipas[cbbEquipa.SelectedIndex].funcionarios[cbbFuncionario.SelectedIndex].tarefas;
+                string r;
+                if (cbResponsavel.Checked) r = cbbFuncionario.Text; else r = "";
+                tarefa.Add(new Tarefa(txtTarefa.Text, txtDescricao.Text, r, Convert.ToDateTime(mtxtDataInicio.Text), Convert.ToDateTime(mtxtDataFim.Text)));
                 task = new TreeNode();
                 task.Text = txtTarefa.Text;
                 task.ImageIndex = task.SelectedImageIndex = 2;
@@ -204,7 +213,7 @@ namespace TasksToDo
         {
             if (!Validacao()) return;
 
-            PopularTree();
+            AdicionarNaTreeView();
         }
 
         private void mtxtDataInicio_TypeValidationCompleted(object sender, TypeValidationEventArgs e)
