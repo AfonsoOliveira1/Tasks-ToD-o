@@ -9,6 +9,7 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Linq;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace TasksToDo
@@ -75,27 +76,27 @@ namespace TasksToDo
             if (!mtxtDataInicio.MaskFull)
             {
                 errorProvider1.SetError(mtxtDataInicio, "Preencha a data de início!");
-                valido = false;
+                return false;
             }
             if (!mtxtDataFim.MaskFull)
             {
                 errorProvider1.SetError(mtxtDataFim, "Preencha a data de fim!");
-                valido = false;
+                return false;
             }
             if (string.IsNullOrWhiteSpace(txtTarefa.Text))//mema coisa mas nao levanta exceção null
             {
                 errorProvider1.SetError(txtTarefa, "Introduza o nome da tarefa!");
-                valido = false;
+                return false;
             }
             if (cbbEquipa.SelectedIndex == -1)
             {
                 errorProvider1.SetError(cbbEquipa, "Selecione uma equipa!");
-                valido = false;
+                return false;
             }
             if (cbbFuncionario.SelectedIndex == -1)
             {
                 errorProvider1.SetError(cbbFuncionario, "Selecione um funcionário!");
-                valido = false;
+                return false;
             }
             if (Convert.ToDateTime(mtxtDataFim.Text) < Convert.ToDateTime(mtxtDataInicio.Text))
             {
@@ -123,16 +124,19 @@ namespace TasksToDo
                 errorProvider1.SetError(txtTarefa, "O funcionario so pode ter 3 tarefas");
             }
 
-            foreach(TreeNode equipa in tvMain.Nodes)
+            var Coordenador = equipas[cbbEquipa.SelectedIndex].funcionarios.FirstOrDefault(x => x.coordenador == true);
+            
+            if(Coordenador != null && cbCoordenador.Checked)//so pode haver 1 coordenador por equipa
             {
-                foreach(TreeNode func in equipa.Nodes)
-                {
-                    if(func.SelectedImageIndex == 3 && cbCoordenador.Checked)//cada equipa so pode ter 1 coordenador
-                    {
-                        valido = false;
-                        break;
-                    }
-                }
+                valido = false;
+                errorProvider1.SetError(cbCoordenador, "Já existe coordenador para esta equipa!");
+            }
+
+            var responsaveis = equipas[cbbEquipa.SelectedIndex].funcionarios.SelectMany(f => f.tarefas).Where(t => t.responsavel != "" && t.nome == txtTarefa.Text).ToList();
+            if(responsaveis.Count >= 1 && cbResponsavel.Checked)//so pode haver 1 responsavel por tarefa
+            {
+                valido = false;
+                errorProvider1.SetError(cbResponsavel, "Só pode haver 1 responsavel por tarefa");
             }
 
             return valido;
@@ -167,7 +171,7 @@ namespace TasksToDo
             TreeNode func = null;
             foreach (TreeNode node in equipaNode.Nodes)
             {
-                if (node.Tag.ToString() == nomeFuncionario)
+                if (node.Text == nomeFuncionario)
                 {
                     func = node;
                     break;
@@ -179,22 +183,11 @@ namespace TasksToDo
                 var funcio = equipas[cbbEquipa.SelectedIndex].funcionarios;
                 func = new TreeNode(nomeFuncionario);
                 func.Tag = cbbFuncionario.Text;
-                if (cbCoordenador.Checked && cbResponsavel.Checked)
-                {
-                    funcio.Add(new Funcionarios(cbbFuncionario.Text, true));
-                    func.Text = "R: " + cbbFuncionario.Text;
-                    func.ImageIndex = func.SelectedImageIndex = 3;
-                }
-                else if (cbCoordenador.Checked)
+
+                if (cbCoordenador.Checked)
                 {
                     funcio.Add(new Funcionarios(cbbFuncionario.Text, true));
                     func.ImageIndex = func.SelectedImageIndex = 3;
-                }
-                else if (cbResponsavel.Checked)
-                {
-                    funcio.Add(new Funcionarios(cbbFuncionario.Text, false));
-                    func.Text = "R: " + cbbFuncionario.Text;
-                    func.ImageIndex = func.SelectedImageIndex = 1;
                 }
                 else
                 {
@@ -207,7 +200,7 @@ namespace TasksToDo
             TreeNode task = null;
             foreach(TreeNode node in func.Nodes)
             {
-                if(node.Text == nomeTarefa)
+                if(node.Tag.ToString() == nomeTarefa)
                 {
                     task = node;
                     break;
@@ -217,12 +210,30 @@ namespace TasksToDo
             if(task == null)
             {
                 var tarefa = equipas.SelectMany(e => e.funcionarios).FirstOrDefault(x => x.nome == nomeFuncionario).tarefas;
-                string r;
-                if (cbResponsavel.Checked) r = cbbFuncionario.Text; else r = "";
-                tarefa.Add(new Tarefa(txtTarefa.Text, txtDescricao.Text, r, Convert.ToDateTime(mtxtDataInicio.Text), Convert.ToDateTime(mtxtDataFim.Text)));
-                task = new TreeNode();
-                task.Text = txtTarefa.Text;
-                task.ImageIndex = task.SelectedImageIndex = 2;
+                if (cbResponsavel.Checked)
+                {
+                    task = new TreeNode(nomeTarefa);
+                    tarefa.Add(new Tarefa(nomeTarefa, txtDescricao.Text, func.Text, Convert.ToDateTime(mtxtDataInicio.Text), Convert.ToDateTime(mtxtDataFim.Text)));
+                    task.Text = nomeTarefa + $" R: {func.Text}";
+                    task.Tag = nomeTarefa;
+                    task.ImageIndex = task.SelectedImageIndex = 2;
+                }
+                else
+                {
+                    var findTaskResponsible = equipas.SelectMany(e => e.funcionarios).SelectMany(f => f.tarefas).FirstOrDefault(x => x.nome == nomeTarefa);
+                    if (findTaskResponsible != null)
+                    {
+                        task = new TreeNode(nomeTarefa + $" R: {findTaskResponsible.responsavel}");
+                        tarefa.Add(new Tarefa(nomeTarefa, txtDescricao.Text, findTaskResponsible.responsavel, Convert.ToDateTime(mtxtDataInicio.Text), Convert.ToDateTime(mtxtDataFim.Text)));
+                    }
+                    else
+                    {
+                        task = new TreeNode(nomeTarefa);
+                        tarefa.Add(new Tarefa(nomeTarefa, txtDescricao.Text, "", Convert.ToDateTime(mtxtDataInicio.Text), Convert.ToDateTime(mtxtDataFim.Text)));
+                    }
+                    task.Tag = nomeTarefa;
+                    task.ImageIndex = task.SelectedImageIndex = 2;
+                }
                 func.Nodes.Add(task);
             }
             else
@@ -239,19 +250,22 @@ namespace TasksToDo
             string caminho = Path.Combine(pastaDocumentos, "Dados", "treeviewdados.txt");
             try
             {
+                File.WriteAllText(caminho, string.Empty);
                 using (StreamWriter writer = new StreamWriter(caminho))
                 {
                     for (int i = 0; i < equipas.Count; i++)
                     {
-                        Console.WriteLine(equipas[i].nome);
+                        writer.Write(equipas[i].nome);
                         for(int j = 0; j < equipas[i].funcionarios.Count; j++)
                         {
-                            Console.WriteLine("|" + equipas[i].funcionarios[j].nome);
+                            writer.Write("|" + equipas[i].funcionarios[j].nome);
                             for(int l = 0; l < equipas[i].funcionarios[j].tarefas.Count; l++)
                             {
-                                Console.WriteLine("|" + equipas[i].funcionarios[j].tarefas[l].nome);
+                                writer.Write("|" + equipas[i].funcionarios[j].tarefas[l].nome);
                             }
+
                         }
+                        writer.WriteLine("\n");
                     }
                 }
             }
@@ -291,25 +305,114 @@ namespace TasksToDo
         private void editarToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (tvMain.SelectedNode == null) return;
-            MessageBox.Show($"Editar: {tvMain.SelectedNode.Text}");
+            TreeNode node = tvMain.SelectedNode;
+            switch (node.Level)
+            {
+                case 2: //tasks
+                    var funcionario = equipas[node.Parent.Parent.Index].funcionarios[node.Parent.Index];
+                    var findtask = funcionario.tarefas.FirstOrDefault(x => x.nome == node.Tag.ToString());
+                    txtTarefa.Text = findtask.nome;
+                    mtxtDataInicio.Text = findtask.dataInicio.ToString("dd/MM/yyyy");
+                    mtxtDataFim.Text = findtask.dataFim.ToString("dd/MM/yyyy");
+                    cbResponsavel.Checked = findtask.responsavel != "";
+                    cbCoordenador.Checked = funcionario.coordenador;
+                    cbbEquipa.SelectedIndex = node.Parent.Parent.Index;
+                    cbbFuncionario.SelectedIndex = node.Parent.Index;
+                    break;
+            }
         }
 
         private void apagarToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (tvMain.SelectedNode == null) return;
+            TreeNode node = tvMain.SelectedNode;
+            switch (node.Level)
+            {
+                case 0: //equipa
+                    var findequipa = equipas.FirstOrDefault(x => x.nome == node.Text);
+                    equipas.Remove(findequipa);
+                    break;
+                case 1: //func
+                    var findfunc = equipas.SelectMany(f => f.funcionarios).FirstOrDefault(x => x.nome == node.Text);
+                    equipas[node.Parent.Index].funcionarios.Remove(findfunc);
+                    break;
+                case 2: //tasks
+                    var findtask = equipas.SelectMany(f => f.funcionarios).SelectMany(t => t.tarefas).FirstOrDefault(x => x.nome == node.Tag.ToString());
+                    equipas[node.Parent.Parent.Index].funcionarios[node.Parent.Index].tarefas.Remove(findtask);
+                    break;
+            }
             tvMain.SelectedNode.Remove();
         }
 
         private void detalhesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (tvMain.SelectedNode == null) return;
-            MessageBox.Show($"Nome: {tvMain.SelectedNode.Text}\nFuncionarios: ", "Detalhes da tarefa", MessageBoxButtons.OK,MessageBoxIcon.Information);
+            TreeNode node = tvMain.SelectedNode;
+
+            switch (node.Level)
+            { 
+                case 2: //tasks
+                    var tarefasEncontradas = equipas
+                        .SelectMany(eq => eq.funcionarios
+                        .SelectMany(func => func.tarefas
+                        .Where(t => t.nome == node.Tag.ToString())
+                        .Select(t => new { Equipa = eq, Funcionario = func, Tarefa = t }))).ToList();
+
+                    if (tarefasEncontradas != null)
+                    {
+                        StringBuilder mensagem1 = new StringBuilder();
+                        string mensagem = "";
+                        foreach(var item in tarefasEncontradas)
+                        {
+                            mensagem =
+                                    $"Nome: {item.Tarefa.nome}\n" +
+                                    $"Data de Início: {item.Tarefa.dataInicio:dd/MM/yyyy}\n" +
+                                    $"Data de Fim: {item.Tarefa.dataFim:dd/MM/yyyy}\n" +
+                                    $"Descrição: {item.Tarefa.descricao}\n" +
+                                    $"Responsável: {item.Tarefa.responsavel}\n" +
+                                    $"Equipa: {item.Equipa.nome}\n" +
+                                    $"Funcionário: {item.Funcionario.nome}\n";
+
+                            mensagem1.AppendLine("$Equipa: {item.Tarefa.nome}\n");
+                            mensagem1.AppendLine("$Funcionário: {item.Tarefa.nome}\n");
+                        }
+                        MessageBox.Show(mensagem + mensagem1, "Detalhes da Tarefa",
+                            MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    break;
+            }
         }
 
         private void tarefasAtivasToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (tvMain.SelectedNode == null) return;
+            TreeNode node = tvMain.SelectedNode;
 
-        }
+            switch (node.Level)
+            {
+                case 1: //func
+                    var equipa = equipas[node.Parent.Parent.Index];
+                    var funcionario = equipa.funcionarios[node.Parent.Index];
+                    var tarefa = funcionario.tarefas.FirstOrDefault(t => t.nome == node.Tag.ToString());
+
+                    if (tarefa != null)
+                    {
+                        string mensagem =
+                            $"Nome: {tarefa.nome}\n" +
+                            $"Data de Início: {tarefa.dataInicio:dd/MM/yyyy}\n" +
+                            $"Data de Fim: {tarefa.dataFim:dd/MM/yyyy}\n" +
+                            $"Descrição: {tarefa.descricao}\n" +
+                            $"Responsável: {tarefa.responsavel}\n" +
+                            $"Equipa: {equipa.nome}" +
+                            $"Funcionário: {funcionario.nome}\n";
+
+                        MessageBox.Show(mensagem, "Detalhes da Tarefa",
+                            MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    break;
+                    break;
+            }
+        }       
 
         private void cargaDeTrabalhoToolStripMenuItem_Click(object sender, EventArgs e)
         {
