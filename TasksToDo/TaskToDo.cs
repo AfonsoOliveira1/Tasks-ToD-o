@@ -18,6 +18,7 @@ namespace TasksToDo
     {
         public List<Equipas> equipas = new List<Equipas>();
         public List<Funcionarios> funcionarios = new List<Funcionarios>();
+        private int idTarefa = 0;
         public TasksToDo()
         {
             InitializeComponent();
@@ -177,10 +178,9 @@ namespace TasksToDo
                     break;
                 }
             }
-
+            var funcio = equipas[cbbEquipa.SelectedIndex].funcionarios;
             if (func == null)
             {
-                var funcio = equipas[cbbEquipa.SelectedIndex].funcionarios;
                 func = new TreeNode(nomeFuncionario);
                 func.Tag = cbbFuncionario.Text;
 
@@ -207,38 +207,79 @@ namespace TasksToDo
                 }
             }
 
-            if(task == null)
+            if (task == null)//verifica se a task e repetido na mesma equipa e funcionario
             {
+                var todasTarefas = equipas
+                    .SelectMany(e => e.funcionarios)
+                    .SelectMany(f => f.tarefas);
+
+                var tarefaExistenteR = todasTarefas
+                    .FirstOrDefault(t =>
+                        t.nome == nomeTarefa &&
+                        t.descricao == txtDescricao.Text &&
+                        t.dataInicio == Convert.ToDateTime(mtxtDataInicio.Text) &&
+                        t.dataFim == Convert.ToDateTime(mtxtDataFim.Text) && 
+                        t.responsavel == cbbFuncionario.Text);
+
+                var tarefaExistente = todasTarefas
+                    .FirstOrDefault(t =>
+                        t.nome == nomeTarefa &&
+                        t.descricao == txtDescricao.Text &&
+                        t.dataInicio == Convert.ToDateTime(mtxtDataInicio.Text) &&
+                        t.dataFim == Convert.ToDateTime(mtxtDataFim.Text) &&
+                        t.responsavel == "");
+
+
+                Tarefa taskfinal;
                 var tarefa = equipas.SelectMany(e => e.funcionarios).FirstOrDefault(x => x.nome == nomeFuncionario).tarefas;
-                if (cbResponsavel.Checked)
+                if (tarefaExistente != null && tarefaExistenteR != null)//verifica se a tarefa e repetida em qualquer funcionario ou equipa
                 {
-                    task = new TreeNode(nomeTarefa);
-                    tarefa.Add(new Tarefa(nomeTarefa, txtDescricao.Text, func.Text, Convert.ToDateTime(mtxtDataInicio.Text), Convert.ToDateTime(mtxtDataFim.Text)));
-                    task.Text = nomeTarefa + $" R: {func.Text}";
-                    task.Tag = nomeTarefa;
+                    taskfinal = tarefaExistente;
+                    if (tarefaExistente.responsavel != "")
+                        task = new TreeNode(nomeTarefa + $" R: {tarefaExistente.responsavel}");                    
+                    else
+                        task = new TreeNode(nomeTarefa);                    
+                    task.Tag = idTarefa++;
                     task.ImageIndex = task.SelectedImageIndex = 2;
                 }
                 else
                 {
-                    var findTaskResponsible = equipas.SelectMany(e => e.funcionarios).SelectMany(f => f.tarefas).FirstOrDefault(x => x.nome == nomeTarefa);
-                    if (findTaskResponsible != null && findTaskResponsible.responsavel != "")
+                    if (cbResponsavel.Checked)
                     {
-                        task = new TreeNode(nomeTarefa + $" R: {findTaskResponsible.responsavel}");
-                        tarefa.Add(new Tarefa(nomeTarefa, txtDescricao.Text, findTaskResponsible.responsavel, Convert.ToDateTime(mtxtDataInicio.Text), Convert.ToDateTime(mtxtDataFim.Text)));
+                        task = new TreeNode(nomeTarefa + $" R: {func.Text}");
+                        taskfinal = new Tarefa(idTarefa++, nomeTarefa, txtDescricao.Text, func.Text, Convert.ToDateTime(mtxtDataInicio.Text), Convert.ToDateTime(mtxtDataFim.Text));
+                        task.Tag = idTarefa++;
+                        task.ImageIndex = task.SelectedImageIndex = 2;
                     }
                     else
                     {
                         task = new TreeNode(nomeTarefa);
-                        tarefa.Add(new Tarefa(nomeTarefa, txtDescricao.Text, "", Convert.ToDateTime(mtxtDataInicio.Text), Convert.ToDateTime(mtxtDataFim.Text)));
+                        taskfinal = new Tarefa(idTarefa++, nomeTarefa, txtDescricao.Text, "", Convert.ToDateTime(mtxtDataInicio.Text), Convert.ToDateTime(mtxtDataFim.Text));
+                        task.Tag = idTarefa++;
+                        task.ImageIndex = task.SelectedImageIndex = 2;
+                        /*isto so ve se a 
+                        var findTaskResponsible = equipas.SelectMany(e => e.funcionarios).SelectMany(f => f.tarefas).FirstOrDefault(x => x.nome == nomeTarefa);
+                        if (findTaskResponsible != null && findTaskResponsible.responsavel != "")
+                        {
+                            task = new TreeNode(nomeTarefa + $" R: {findTaskResponsible.responsavel}");
+                            tarefa.Add();
+                        }
+                        else
+                        {
+                            task = new TreeNode(nomeTarefa);
+                            tarefa.Add(new Tarefa(idTarefa++, nomeTarefa, txtDescricao.Text, "", Convert.ToDateTime(mtxtDataInicio.Text), Convert.ToDateTime(mtxtDataFim.Text)));
+                        }
+                        task.Tag = idTarefa++;
+                        task.ImageIndex = task.SelectedImageIndex = 2;
+                        */
                     }
-                    task.Tag = nomeTarefa;
-                    task.ImageIndex = task.SelectedImageIndex = 2;
                 }
                 func.Nodes.Add(task);
+                tarefa.Add(taskfinal);
             }
             else
             {
-                errorProvider1.SetError(txtTarefa, "Já existe esta Tarefa!");
+                errorProvider1.SetError(txtTarefa, "Já existe esta Tarefa Nesta Equipa e Funcionario!");
             }
 
             equipaNode.Expand();
