@@ -352,32 +352,40 @@ namespace TasksToDo
             switch (node.Level)
             { 
                 case 2: //tasks
-                    var tarefasEncontradas = equipas
-                        .SelectMany(eq => eq.funcionarios
-                        .SelectMany(func => func.tarefas
-                        .Where(t => t.nome == node.Tag.ToString())
-                        .Select(t => new { Equipa = eq, Funcionario = func, Tarefa = t }))).ToList();
+                    var tarefa = equipas
+                        .SelectMany(eq => eq.funcionarios)
+                        .SelectMany(func => func.tarefas)
+                        .FirstOrDefault(t => t.nome == node.Tag.ToString());
 
-                    if (tarefasEncontradas != null)
+                    if (tarefa != null)
                     {
-                        StringBuilder mensagem1 = new StringBuilder();
-                        string mensagem = "";
-                        foreach(var item in tarefasEncontradas)
-                        {
-                            mensagem =
-                                    $"Nome: {item.Tarefa.nome}\n" +
-                                    $"Data de Início: {item.Tarefa.dataInicio:dd/MM/yyyy}\n" +
-                                    $"Data de Fim: {item.Tarefa.dataFim:dd/MM/yyyy}\n" +
-                                    $"Descrição: {item.Tarefa.descricao}\n" +
-                                    $"Responsável: {item.Tarefa.responsavel}\n" +
-                                    $"Equipa: {item.Equipa.nome}\n" +
-                                    $"Funcionário: {item.Funcionario.nome}\n";
+                        string mensagem =
+                                $"Nome: {tarefa.nome}\n" +
+                                $"Data de Início: {tarefa.dataInicio:dd/MM/yyyy}\n" +
+                                $"Data de Fim: {tarefa.dataFim:dd/MM/yyyy}\n" +
+                                $"Descrição: {tarefa.descricao}\n" +
+                                $"Responsável: {tarefa.responsavel}\n";
 
-                            mensagem1.AppendLine("$Equipa: {item.Tarefa.nome}\n");
-                            mensagem1.AppendLine("$Funcionário: {item.Tarefa.nome}\n");
+                        List<string> mensagemPartes = new List<string>();
+                        for(int i = 0; i < equipas.Count; i++)
+                        {
+                            var eq = equipas[i];
+                            for(int j = 0; j < eq.funcionarios.Count; j++)
+                            {
+                                var func = eq.funcionarios[j];
+                                for(int l = 0; l < func.tarefas.Count; l++)
+                                {
+                                    var task = func.tarefas[l];
+                                    if(task.nome == tarefa.nome)
+                                    {
+                                        mensagemPartes.Add($"Equipa: {eq.nome}\n");
+                                        mensagemPartes.Add($"Funcionário: {func.nome}\n");
+                                    }
+                                }
+                            }
                         }
-                        MessageBox.Show(mensagem + mensagem1, "Detalhes da Tarefa",
-                            MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        
+                    MessageBox.Show(mensagem + string.Join("", mensagemPartes), "Detalhes da Tarefa",MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     break;
             }
