@@ -221,7 +221,7 @@ namespace TasksToDo
                 else
                 {
                     var findTaskResponsible = equipas.SelectMany(e => e.funcionarios).SelectMany(f => f.tarefas).FirstOrDefault(x => x.nome == nomeTarefa);
-                    if (findTaskResponsible != null)
+                    if (findTaskResponsible != null && findTaskResponsible.responsavel != "")
                     {
                         task = new TreeNode(nomeTarefa + $" R: {findTaskResponsible.responsavel}");
                         tarefa.Add(new Tarefa(nomeTarefa, txtDescricao.Text, findTaskResponsible.responsavel, Convert.ToDateTime(mtxtDataInicio.Text), Convert.ToDateTime(mtxtDataFim.Text)));
@@ -318,6 +318,8 @@ namespace TasksToDo
                     cbCoordenador.Checked = funcionario.coordenador;
                     cbbEquipa.SelectedIndex = node.Parent.Parent.Index;
                     cbbFuncionario.SelectedIndex = node.Parent.Index;
+                    tvMain.SelectedNode.Remove();
+                    funcionario.tarefas.Remove(findtask);
                     break;
             }
         }
@@ -385,7 +387,7 @@ namespace TasksToDo
                             }
                         }
                         
-                    MessageBox.Show(mensagem + string.Join("", mensagemPartes), "Detalhes da Tarefa",MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show(mensagem + string.Join("", mensagemPartes), "Detalhes da Tarefa", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     break;
             }
@@ -399,32 +401,63 @@ namespace TasksToDo
             switch (node.Level)
             {
                 case 1: //func
-                    var equipa = equipas[node.Parent.Parent.Index];
-                    var funcionario = equipa.funcionarios[node.Parent.Index];
-                    var tarefa = funcionario.tarefas.FirstOrDefault(t => t.nome == node.Tag.ToString());
+                    var tarefas = equipas
+                        .SelectMany(eq => eq.funcionarios)
+                        .Where(f => f.nome == node.Text)
+                        .SelectMany(t => t.tarefas)
+                        .ToList();
 
-                    if (tarefa != null)
+                    string mensagem = $"Nome: {node.Text}\n";
+
+                    List<string> mensagemPartes = new List<string>();
+                    foreach (var equipas in equipas)
                     {
-                        string mensagem =
-                            $"Nome: {tarefa.nome}\n" +
-                            $"Data de Início: {tarefa.dataInicio:dd/MM/yyyy}\n" +
-                            $"Data de Fim: {tarefa.dataFim:dd/MM/yyyy}\n" +
-                            $"Descrição: {tarefa.descricao}\n" +
-                            $"Responsável: {tarefa.responsavel}\n" +
-                            $"Equipa: {equipa.nome}" +
-                            $"Funcionário: {funcionario.nome}\n";
-
-                        MessageBox.Show(mensagem, "Detalhes da Tarefa",
-                            MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        foreach (var tarefa in tarefas)
+                        {
+                            mensagemPartes.Add(
+                                $"Equipe: {equipas.nome}\n" +
+                                $"Nome da Tarefa: {tarefa.nome}\n" +
+                                $"Data de Início: {tarefa.dataInicio:dd/MM/yyyy}\n" +
+                                $"Data de Fim: {tarefa.dataFim:dd/MM/yyyy}\n" +
+                                $"Descrição: {tarefa.descricao}\n" +
+                                $"Responsável: {tarefa.responsavel}\n");
+                        }
                     }
-                    break;
+     
+                    MessageBox.Show(mensagem + string.Join("", mensagemPartes), "Detalhes da Tarefa", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     break;
             }
-        }       
+        }
 
         private void cargaDeTrabalhoToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (tvMain.SelectedNode == null) return;
+            TreeNode node = tvMain.SelectedNode;
 
+            switch (node.Level)
+            {
+                case 0:
+                    var carga = equipas
+                        .Where(eq => eq.nome == node.Text)
+                        .SelectMany(f => f.funcionarios)
+                        .ToList();
+                    var tasks = carga.SelectMany(t => t.tarefas).ToList();
+
+                    List<string> mensagemPartes = new List<string>();
+                    mensagemPartes.Add(node.Text + "\n");
+                    foreach (var item in carga)
+                    {
+                        foreach (var task in tasks)
+                        {
+                            mensagemPartes.Add(
+                                $"{item.nome}: {tasks.Count}\n" +
+                                $"{task.nome}: {task.dataFim:dd/MM/yyyy}\n"
+                                );
+                        }
+                    }
+                    MessageBox.Show(string.Join("", mensagemPartes), "Carga de Trabalho", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    break;
+            }
         }
 
         private void desempenhoToolStripMenuItem_Click(object sender, EventArgs e)
