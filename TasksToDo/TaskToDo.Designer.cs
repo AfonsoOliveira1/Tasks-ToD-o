@@ -176,6 +176,7 @@
             this.tvMain.SelectedImageIndex = 0;
             this.tvMain.Size = new System.Drawing.Size(233, 354);
             this.tvMain.TabIndex = 14;
+            this.tvMain.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.tvMain_NodeMouseClick);
             // 
             // contextMenuStrip1
             // 
