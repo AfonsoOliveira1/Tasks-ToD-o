@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -20,6 +21,7 @@ namespace TasksToDo
         public List<Equipas> equipas = new List<Equipas>();
         public List<Funcionarios> funcionarios = new List<Funcionarios>();
         private int idTarefa = -1;
+
         public TasksToDo()
         {
             InitializeComponent();
@@ -46,6 +48,8 @@ namespace TasksToDo
             }
             catch (Exception ex)
             {
+                string caminhob = Path.Combine(pastaDocumentos, "Dados", "logs.txt");
+                File.AppendAllText(caminhob, ex.Source + ex.TargetSite + DateTime.Now + " - " + ex.Message + Environment.NewLine);
                 MessageBox.Show("Ocorreu um erro com" + ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -67,6 +71,8 @@ namespace TasksToDo
             }
             catch (Exception ex)
             {
+                string caminhob = Path.Combine(pastaDocumentos, "Dados", "logs.txt");
+                File.AppendAllText(caminhob, ex.Source + ex.TargetSite + DateTime.Now + " - " + ex.Message + Environment.NewLine);
                 MessageBox.Show("Ocorreu um erro com" + ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -78,7 +84,7 @@ namespace TasksToDo
             if (!mtxtDataInicio.MaskFull)
             {
                 errorProvider1.SetError(mtxtDataInicio, "Preencha a data de início!");
-                return false;
+                return false;//se nao fizer return aqui vai levantar exeção na conversao da data
             }
             if (!mtxtDataFim.MaskFull)
             {
@@ -100,11 +106,14 @@ namespace TasksToDo
                 errorProvider1.SetError(cbbFuncionario, "Selecione um funcionário!");
                 return false;
             }
-            if (Convert.ToDateTime(mtxtDataFim.Text) < Convert.ToDateTime(mtxtDataInicio.Text))
+            DateTime dataI = DateTime.ParseExact(mtxtDataInicio.Text, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+            DateTime dataF = DateTime.ParseExact(mtxtDataFim.Text, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+
+            if (dataF < dataI)
             {
                 errorProvider1.SetError(mtxtDataFim, "Data fim nao pode ser menor que a Data de incio!");
                 errorProvider1.SetError(mtxtDataInicio, "Data fim nao pode ser menor que a Data de incio!");
-                valido = false;
+                return false;
             }
             if (equipas[cbbEquipa.SelectedIndex].funcionarios.Count >= 5)//cada equipa so pode ter 5 funcionarios no maximo
             {
@@ -116,7 +125,7 @@ namespace TasksToDo
                 .SelectMany(e => e.funcionarios)
                 .FirstOrDefault(x => x.nome == cbbFuncionario.Text);
 
-            if (funcionario == null)
+            if (funcionario == null)//so para nao levantar exeção no incio
             {
                 valido = true;
             }
@@ -295,6 +304,8 @@ namespace TasksToDo
             }
             catch (Exception ex)
             {
+                string caminhob = Path.Combine(pastaDocumentos, "Dados", "logs.txt");
+                File.AppendAllText(caminhob, ex.Source + ex.TargetSite + DateTime.Now + " - " + ex.Message + Environment.NewLine);
                 MessageBox.Show("Ocorreu um erro com" + ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -339,15 +350,32 @@ namespace TasksToDo
                         .SelectMany(eq => eq.funcionarios)
                         .FirstOrDefault(f => f.tarefas.Any(t => t.id == Convert.ToInt32(node.Tag)));
                     var findtask = equipas.SelectMany(eq => eq.funcionarios).SelectMany(f => f.tarefas).FirstOrDefault(x => x.id == Convert.ToInt32(node.Tag));
+
                     txtTarefa.Text = findtask.nome;
                     mtxtDataInicio.Text = findtask.dataInicio.ToString("dd/MM/yyyy");
                     mtxtDataFim.Text = findtask.dataFim.ToString("dd/MM/yyyy");
                     cbResponsavel.Checked = findtask.responsavel != "";
                     cbCoordenador.Checked = funcionario.coordenador;
-                    cbbEquipa.Text = equipa.nome;
-                    cbbFuncionario.Text = funcionario.nome;
-                    tvMain.SelectedNode.Remove();
-                    funcionario.tarefas.Remove(findtask);
+                    cbbEquipa.Text = node.Parent.Parent.Text;
+                    cbbFuncionario.Text = node.Parent.Text;
+
+                    foreach (var eq in equipas)
+                    {
+                        foreach (var func in eq.funcionarios)
+                        {
+                            func.tarefas.RemoveAll(t => t.id == Convert.ToInt32(node.Tag));
+                        }
+                    }
+                    foreach (TreeNode eq in tvMain.Nodes)
+                    {
+                        foreach (TreeNode func in eq.Nodes)
+                        {
+                            var tar = func.Nodes.Cast<TreeNode>().FirstOrDefault(t => Convert.ToInt32(t.Tag) == Convert.ToInt32(node.Tag));
+                            if (tar != null)
+                                func.Nodes.Remove(tar);
+                        }
+                    }
+
                     break;
             }
         }
@@ -524,6 +552,8 @@ namespace TasksToDo
                     }
                     catch (Exception ex)
                     {
+                        string caminhob = Path.Combine(pastaDocumentos, "Dados", "logs.txt");
+                        File.AppendAllText(caminhob, ex.Source + ex.TargetSite + DateTime.Now + " - " + ex.Message + Environment.NewLine);
                         MessageBox.Show("Ocorreu um erro com" + ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                     break;
@@ -563,7 +593,12 @@ namespace TasksToDo
                         break;
                 }
             }
-            catch (Exception) { }
+            catch (Exception ex) 
+            {
+                string pastaDocumentos = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                string caminho = Path.Combine(pastaDocumentos, "Dados", "logs.txt");
+                File.AppendAllText(caminho, ex.Source + ex.TargetSite + DateTime.Now + " - " + ex.Message + Environment.NewLine);
+            }
         }
     }
 }
